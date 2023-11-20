@@ -1,0 +1,25 @@
+{
+    "name": "spr-digital-lab/spr-laravel-service-sdk",
+    "version": "1.0.0",
+    "autoload": {
+        "psr-4": {
+            "Spr\\SprLaravelServiceSdk\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "UJUAL",
+            "email": "ujual06@gmail.com"
+        }
+    ],
+    "require": {
+        "php": "^7.3|^8.0",
+        "laravel/framework": "^8.75"
+    },
+    "repositories": [ 
+        {
+            "type": "vcs",
+            "url": " https://nk369@bitbucket.org/spr-digital-lab/spr-service-sdk-for-laravel.git"
+        }
+     ]
+}
