@@ -17,7 +17,7 @@ class RemoteApi extends Controller
   public function action($message)
   {
     
-    return response()->json($message);
+    return $message;
 
   }
 

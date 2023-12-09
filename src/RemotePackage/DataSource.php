@@ -29,7 +29,7 @@ class DataSource extends RemotePackage
         if (!isset($data['with'])) {
             $data['with'] = [];
         }
-
+        
         return $data;
     }
 
@@ -110,7 +110,7 @@ class DataSource extends RemotePackage
 
     public function query($data)
     {
-        $this->normalizeData($data);
+        $data=$this->normalizeData($data);
         $withRelation = $data['with'];
 
         $query = $this->filterQuery($data);
