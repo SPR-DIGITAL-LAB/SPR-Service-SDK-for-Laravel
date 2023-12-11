@@ -29,11 +29,6 @@ class DataSource extends RemotePackage
         if (!isset($data['with'])) {
             $data['with'] = [];
         }
-        if (!isset($data['paginate'])) {
-            $data['paginate']['perPage'] = 10;
-            $data['paginate']['page'] = 1;
-        }
-
         return $data;
     }
 
@@ -90,8 +85,7 @@ class DataSource extends RemotePackage
     {
         $data = $this->normalizeData($data);
         $filters = $data['filters'];
-        $perPage = $data['paginate']['perPage'];
-        $page = $data['paginate']['page'];
+
         $query = $this->source($data);
         foreach ($filters as $filter) {
             $v1 = $filter['v1'];
@@ -111,7 +105,13 @@ class DataSource extends RemotePackage
                 }
             }
         }
-        return $query->paginate($perPage, ['*'], 'page', $page);
+        if (!isset($data['paginate']))
+            return $query->paginate($query->count(), ['*'], 'page', 1);
+        else {
+            $perPage = $data['paginate']['perPage'];
+            $page = $data['paginate']['page'];
+            return $query->paginate($perPage, ['*'], 'page', $page);
+        }
     }
 
     public function query($data)
@@ -134,7 +134,7 @@ class DataSource extends RemotePackage
                 'total' => $query->total(),
                 'currentPage' => $query->currentPage(),
                 'hasMorePages' => $query->hasMorePages(),
-                'tl' => ($et*1000)
+                'tl' => ($et * 1000)
             ]
         );
     }
