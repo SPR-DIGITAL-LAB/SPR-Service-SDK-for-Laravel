@@ -84,9 +84,15 @@ class DataSource extends RemotePackage
     public function filterQuery($data)
     {
         $data = $this->normalizeData($data);
-        $filters = $data['filters'];
+       
 
         $query = $this->source($data);
+
+        $withRelation = $data['with'];
+        foreach ($withRelation as $relation) {
+            $query = $query->with($relation);
+        }
+        $filters = $data['filters'];
         foreach ($filters as $filter) {
             $v1 = $filter['v1'];
             $op = $filter['op'];
@@ -117,13 +123,8 @@ class DataSource extends RemotePackage
     public function query($data)
     {
         $data = $this->normalizeData($data);
-        $withRelation = $data['with'];
-
         $query = $this->filterQuery($data);
         $ut = microtime(true);
-        foreach ($withRelation as $relation) {
-            $query = $query->with($relation);
-        }
         $results = $query->items();
         $et = microtime(true) - $ut;
         return $this->actionOK(
