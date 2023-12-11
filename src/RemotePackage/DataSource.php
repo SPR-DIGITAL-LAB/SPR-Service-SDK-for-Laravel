@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 class DataSource extends RemotePackage
-{   
+{
 
     protected function source()
     {
@@ -29,7 +29,11 @@ class DataSource extends RemotePackage
         if (!isset($data['with'])) {
             $data['with'] = [];
         }
-        
+        if (!isset($data['paginate'])) {
+            $data['paginate']['perPage'] = 10;
+            $data['paginate']['page'] = 1;
+        }
+
         return $data;
     }
 
@@ -86,6 +90,8 @@ class DataSource extends RemotePackage
     {
         $data = $this->normalizeData($data);
         $filters = $data['filters'];
+        $perPage = $data['paginate']['perPage'];
+        $page = $data['paginate']['page'];
         $query = $this->source($data);
         foreach ($filters as $filter) {
             $v1 = $filter['v1'];
@@ -105,12 +111,12 @@ class DataSource extends RemotePackage
                 }
             }
         }
-        return $query;
+        return $query->paginate($perPage, ['*'], 'page', $page);
     }
 
     public function query($data)
     {
-        $data=$this->normalizeData($data);
+        $data = $this->normalizeData($data);
         $withRelation = $data['with'];
 
         $query = $this->filterQuery($data);
@@ -118,9 +124,19 @@ class DataSource extends RemotePackage
         foreach ($withRelation as $relation) {
             $query = $query->with($relation);
         }
-        $results = $query->get();
+        $results = $query->items();
         $et = microtime(true) - $ut;
-        return $this->actionOK(['query' => $results, 'tl' => $et]);
+        return $this->actionOK(
+            [
+                'query' => $results,
+                'hasPages' => $query->hasPages(),
+                'perPage' => $query->perPage(),
+                'total' => $query->total(),
+                'currentPage' => $query->currentPage(),
+                'hasMorePages' => $query->hasMorePages(),
+                'tl' => ($et*1000)
+            ]
+        );
     }
 
     public function purify($data, $rules)
