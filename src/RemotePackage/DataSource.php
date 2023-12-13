@@ -84,10 +84,7 @@ class DataSource extends RemotePackage
     public function filterQuery($data)
     {
         $data = $this->normalizeData($data);
-       
-
         $query = $this->source($data);
-
         $withRelation = $data['with'];
         foreach ($withRelation as $relation) {
             $query = $query->with($relation);
@@ -111,6 +108,32 @@ class DataSource extends RemotePackage
                 }
             }
         }
+        return $query;
+    }
+
+    public function query($data)
+    {
+        $data = $this->normalizeData($data);
+        $query = $this->filterQuery($data);
+        $paginatedQuery = $this->paginateQuery($data, $query);
+        $ut = microtime(true);
+        $results = $paginatedQuery->items();
+        $et = microtime(true) - $ut;
+        return $this->actionOK(
+            [
+                'query' => $results,
+                'hasPages' => $paginatedQuery->hasPages(),
+                'perPage' => $paginatedQuery->perPage(),
+                'total' => $paginatedQuery->total(),
+                'currentPage' => $paginatedQuery->currentPage(),
+                'hasMorePages' => $paginatedQuery->hasMorePages(),
+                'tl' => ($et * 1000)
+            ]
+        );
+    }
+
+    public function paginateQuery($data, $query)
+    {
         if (!isset($data['paginate']))
             return $query->paginate($query->count(), ['*'], 'page', 1);
         else {
@@ -118,26 +141,6 @@ class DataSource extends RemotePackage
             $page = $data['paginate']['page'];
             return $query->paginate($perPage, ['*'], 'page', $page);
         }
-    }
-
-    public function query($data)
-    {
-        $data = $this->normalizeData($data);
-        $query = $this->filterQuery($data);
-        $ut = microtime(true);
-        $results = $query->items();
-        $et = microtime(true) - $ut;
-        return $this->actionOK(
-            [
-                'query' => $results,
-                'hasPages' => $query->hasPages(),
-                'perPage' => $query->perPage(),
-                'total' => $query->total(),
-                'currentPage' => $query->currentPage(),
-                'hasMorePages' => $query->hasMorePages(),
-                'tl' => ($et * 1000)
-            ]
-        );
     }
 
     public function purify($data, $rules)
